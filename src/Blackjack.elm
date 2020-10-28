@@ -6,6 +6,7 @@ module Blackjack exposing
 
 import Random
 import Random.List
+import Task
 
 
 type CardValue
@@ -141,6 +142,7 @@ deck =
 
 type Msg
     = SuffledDeck Deck
+    | Daaa
 
 
 init : ( Model, Cmd Msg )
@@ -168,11 +170,14 @@ update msg model =
                         , sam = ( card1, card3 )
                         , dealer = ( card2, card4 )
                         }
-                    , Cmd.none
+                    , Task.succeed () |> Task.perform (\_ -> Daaa)
                     )
 
                 _ ->
                     ( Woops "shuflled deck wasn't quite right ... ", Cmd.none )
+
+        Daaa ->
+            ( model, Cmd.none )
 
 
 main : Platform.Program () Model Msg

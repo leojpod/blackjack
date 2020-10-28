@@ -2520,9 +2520,6 @@ var $elm$core$Set$toList = function (_v0) {
 };
 var $elm$core$Basics$GT = {$: 'GT'};
 var $author$project$Blackjack$NotStarted = {$: 'NotStarted'};
-var $elm$core$Basics$identity = function (x) {
-	return x;
-};
 var $author$project$Blackjack$SuffledDeck = function (a) {
 	return {$: 'SuffledDeck', a: a};
 };
@@ -2696,6 +2693,9 @@ var $author$project$Blackjack$deck = $elm$core$List$concat(
 				$author$project$Blackjack$allValues);
 		},
 		$author$project$Blackjack$allColours));
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -3563,6 +3563,7 @@ var $author$project$Blackjack$init = _Utils_Tuple2(
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$json$Json$Decode$succeed = _Json_succeed;
+var $author$project$Blackjack$Daaa = {$: 'Daaa'};
 var $author$project$Blackjack$GameOn = function (a) {
 	return {$: 'GameOn', a: a};
 };
@@ -3631,35 +3632,120 @@ var $author$project$Blackjack$modelToString = function (model) {
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm$core$Task$Perform = function (a) {
+	return {$: 'Perform', a: a};
+};
+var $elm$core$Task$init = $elm$core$Task$succeed(_Utils_Tuple0);
+var $elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (a) {
+				return $elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var $elm$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (a) {
+				return A2(
+					$elm$core$Task$andThen,
+					function (b) {
+						return $elm$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var $elm$core$Task$sequence = function (tasks) {
+	return A3(
+		$elm$core$List$foldr,
+		$elm$core$Task$map2($elm$core$List$cons),
+		$elm$core$Task$succeed(_List_Nil),
+		tasks);
+};
+var $elm$core$Task$spawnCmd = F2(
+	function (router, _v0) {
+		var task = _v0.a;
+		return _Scheduler_spawn(
+			A2(
+				$elm$core$Task$andThen,
+				$elm$core$Platform$sendToApp(router),
+				task));
+	});
+var $elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			$elm$core$Task$map,
+			function (_v0) {
+				return _Utils_Tuple0;
+			},
+			$elm$core$Task$sequence(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var $elm$core$Task$onSelfMsg = F3(
+	function (_v0, _v1, _v2) {
+		return $elm$core$Task$succeed(_Utils_Tuple0);
+	});
+var $elm$core$Task$cmdMap = F2(
+	function (tagger, _v0) {
+		var task = _v0.a;
+		return $elm$core$Task$Perform(
+			A2($elm$core$Task$map, tagger, task));
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager($elm$core$Task$init, $elm$core$Task$onEffects, $elm$core$Task$onSelfMsg, $elm$core$Task$cmdMap);
+var $elm$core$Task$command = _Platform_leaf('Task');
+var $elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return $elm$core$Task$command(
+			$elm$core$Task$Perform(
+				A2($elm$core$Task$map, toMessage, task)));
+	});
 var $author$project$Blackjack$update = F2(
 	function (msg, model) {
 		var _v0 = A2($elm$core$Debug$log, 'msg', msg);
 		var _v1 = A2(
 			$elm$core$Debug$log,
-			'',
+			'model',
 			$author$project$Blackjack$modelToString(model));
-		var newDeck = msg.a;
-		if (((newDeck.b && newDeck.b.b) && newDeck.b.b.b) && newDeck.b.b.b.b) {
-			var card1 = newDeck.a;
-			var _v4 = newDeck.b;
-			var card2 = _v4.a;
-			var _v5 = _v4.b;
-			var card3 = _v5.a;
-			var _v6 = _v5.b;
-			var card4 = _v6.a;
-			var deck_ = _v6.b;
-			return _Utils_Tuple2(
-				$author$project$Blackjack$GameOn(
-					{
-						dealer: _Utils_Tuple2(card2, card4),
-						sam: _Utils_Tuple2(card1, card3),
-						stack: deck_
-					}),
-				$elm$core$Platform$Cmd$none);
+		if (msg.$ === 'SuffledDeck') {
+			var newDeck = msg.a;
+			if (((newDeck.b && newDeck.b.b) && newDeck.b.b.b) && newDeck.b.b.b.b) {
+				var card1 = newDeck.a;
+				var _v4 = newDeck.b;
+				var card2 = _v4.a;
+				var _v5 = _v4.b;
+				var card3 = _v5.a;
+				var _v6 = _v5.b;
+				var card4 = _v6.a;
+				var deck_ = _v6.b;
+				return _Utils_Tuple2(
+					$author$project$Blackjack$GameOn(
+						{
+							dealer: _Utils_Tuple2(card2, card4),
+							sam: _Utils_Tuple2(card1, card3),
+							stack: deck_
+						}),
+					A2(
+						$elm$core$Task$perform,
+						function (_v7) {
+							return $author$project$Blackjack$Daaa;
+						},
+						$elm$core$Task$succeed(_Utils_Tuple0)));
+			} else {
+				return _Utils_Tuple2(
+					$author$project$Blackjack$Woops('shuflled deck wasn\'t quite right ... '),
+					$elm$core$Platform$Cmd$none);
+			}
 		} else {
-			return _Utils_Tuple2(
-				$author$project$Blackjack$Woops('shuflled deck wasn\'t quite right ... '),
-				$elm$core$Platform$Cmd$none);
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $elm$core$Platform$worker = _Platform_worker;
