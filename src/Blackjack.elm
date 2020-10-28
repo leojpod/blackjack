@@ -4,6 +4,7 @@ module Blackjack exposing
     , main
     )
 
+import List.Extra
 import Random
 import Random.List
 import Task
@@ -15,6 +16,25 @@ type CardValue
     | Queen
     | Jack
     | Num Int
+
+
+valueToPoint : CardValue -> Int
+valueToPoint value =
+    case value of
+        Ace ->
+            11
+
+        King ->
+            10
+
+        Queen ->
+            10
+
+        Jack ->
+            10
+
+        Num i ->
+            i
 
 
 valueToString : CardValue -> String
@@ -70,14 +90,59 @@ cardToString { colour, value } =
     "(" ++ valueToString value ++ " " ++ colourToString colour ++ ")"
 
 
+cardToPoint : Card -> Int
+cardToPoint { value } =
+    valueToPoint value
+
+
 type alias Deck =
     List Card
+
+
+type alias Hand =
+    List Card
+
+
+handToString : Hand -> String
+handToString =
+    List.map cardToString >> String.join ", "
+
+
+scoreHand : Hand -> Int
+scoreHand =
+    List.map cardToPoint >> List.sum
 
 
 type Model
     = NotStarted
     | GameOn Blackjack
     | Woops String
+
+
+map : Model -> (Blackjack -> Blackjack) -> Model
+map model fct =
+    case model of
+        NotStarted ->
+            NotStarted
+
+        Woops str ->
+            Woops str
+
+        GameOn blackjack ->
+            GameOn <| fct blackjack
+
+
+play : Model -> String -> (Blackjack -> ( Model, Msg )) -> ( Model, Cmd Msg )
+play model errText fct =
+    case model of
+        NotStarted ->
+            ( Woops errText, Cmd.none )
+
+        Woops str ->
+            ( Woops str, Cmd.none )
+
+        GameOn blackjack ->
+            fct blackjack |> Tuple.mapSecond runMsg
 
 
 modelToString : Model -> String
@@ -95,31 +160,20 @@ modelToString model =
 
 type alias Blackjack =
     { stack : Deck
-    , sam : ( Card, Card )
-    , dealer : ( Card, Card )
+    , sam : Hand
+    , dealer : Hand
     }
 
 
 blackjackToString : Blackjack -> String
 blackjackToString { stack, sam, dealer } =
-    let
-        ( sc1, sc2 ) =
-            sam
-
-        ( dc1, dc2 ) =
-            dealer
-    in
     "\n\tDeck -> "
         ++ String.join " ; " (List.map cardToString stack)
         ++ "\n\tSam -> ["
-        ++ cardToString sc1
-        ++ " ; "
-        ++ cardToString sc2
+        ++ handToString sam
         ++ "]"
         ++ "\n\tDealer -> ["
-        ++ cardToString dc1
-        ++ " ; "
-        ++ cardToString dc2
+        ++ handToString dealer
         ++ "]"
 
 
@@ -142,7 +196,23 @@ deck =
 
 type Msg
     = SuffledDeck Deck
-    | Daaa
+    | Start
+    | SamsTurn
+    | DealersTurn
+    | SamWon
+    | DealerWon
+    | Push
+    | Failure
+
+
+msgToString : Msg -> String
+msgToString msg =
+    case msg of
+        SuffledDeck suffledDeck ->
+            "SuffledDeck [" ++ String.join ", " (List.map cardToString suffledDeck) ++ "]"
+
+        _ ->
+            Debug.toString msg
 
 
 init : ( Model, Cmd Msg )
@@ -152,11 +222,16 @@ init =
     )
 
 
+runMsg : Msg -> Cmd Msg
+runMsg msg =
+    Task.succeed () |> Task.perform (\_ -> msg)
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
         _ =
-            Debug.log "msg" msg
+            Debug.log "msg" <| msgToString msg
 
         _ =
             Debug.log "model" <| modelToString model
@@ -167,16 +242,113 @@ update msg model =
                 card1 :: card2 :: card3 :: card4 :: deck_ ->
                     ( GameOn
                         { stack = deck_
-                        , sam = ( card1, card3 )
-                        , dealer = ( card2, card4 )
+                        , sam = [ card1, card3 ]
+                        , dealer = [ card2, card4 ]
                         }
-                    , Task.succeed () |> Task.perform (\_ -> Daaa)
+                    , runMsg Start
                     )
 
                 _ ->
                     ( Woops "shuflled deck wasn't quite right ... ", Cmd.none )
 
-        Daaa ->
+        Start ->
+            play model
+                "cannot start a game without dealing it first"
+                (\({ sam, dealer } as blackjack) ->
+                    let
+                        samScore =
+                            scoreHand sam
+
+                        dealerScore =
+                            scoreHand dealer
+                    in
+                    case ( samScore == 21, dealerScore == 21 ) of
+                        ( True, True ) ->
+                            ( GameOn blackjack, Push )
+
+                        ( True, _ ) ->
+                            ( GameOn blackjack, SamWon )
+
+                        ( _, True ) ->
+                            ( GameOn blackjack, DealerWon )
+
+                        ( False, False ) ->
+                            ( GameOn blackjack, SamsTurn )
+                )
+
+        SamsTurn ->
+            play model
+                "cannot start a game without dealing it first"
+                (\({ stack, sam } as blackjack) ->
+                    let
+                        samScore =
+                            scoreHand sam
+                    in
+                    case ( List.Extra.uncons stack, samScore < 17, samScore <= 21 ) of
+                        ( _, False, False ) ->
+                            -- sam lost
+                            ( GameOn blackjack, DealerWon )
+
+                        ( _, False, True ) ->
+                            -- sam stop taking up cards
+                            ( GameOn blackjack, DealersTurn )
+
+                        ( Just ( card, stack_ ), True, _ ) ->
+                            -- sam picks a card
+                            ( GameOn
+                                { blackjack
+                                    | stack = stack_
+                                    , sam = card :: sam
+                                }
+                            , SamsTurn
+                            )
+
+                        ( Nothing, _, _ ) ->
+                            ( Woops "no winner and no cards left, how is that possible? ", Failure )
+                )
+
+        DealersTurn ->
+            play model
+                "cannot start a game without dealing it first"
+                (\({ stack, sam, dealer } as blackjack) ->
+                    let
+                        samScore =
+                            scoreHand sam
+
+                        dealerScore =
+                            scoreHand dealer
+                    in
+                    case ( List.Extra.uncons stack, dealerScore < samScore, dealerScore <= 21 ) of
+                        ( _, False, False ) ->
+                            -- dealer over 21
+                            ( GameOn blackjack, SamWon )
+
+                        ( _, False, True ) ->
+                            ( GameOn blackjack, DealerWon )
+
+                        ( Just ( card, stack_ ), True, _ ) ->
+                            ( GameOn
+                                { blackjack
+                                    | stack = stack_
+                                    , dealer = card :: dealer
+                                }
+                            , DealersTurn
+                            )
+
+                        ( Nothing, _, _ ) ->
+                            ( Woops "no winner and no cards left, how is that possible?", Failure )
+                )
+
+        SamWon ->
+            ( model, Cmd.none )
+
+        DealerWon ->
+            ( model, Cmd.none )
+
+        Push ->
+            ( model, Cmd.none )
+
+        Failure ->
             ( model, Cmd.none )
 
 
