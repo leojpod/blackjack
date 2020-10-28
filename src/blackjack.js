@@ -2519,8 +2519,11 @@ var $elm$core$Set$toList = function (_v0) {
 	return $elm$core$Dict$keys(dict);
 };
 var $elm$core$Basics$GT = {$: 'GT'};
-var $author$project$Blackjack$NotStarted = {$: 'NotStarted'};
-var $author$project$Blackjack$SuffledDeck = function (a) {
+var $author$project$Blackjack2$Shuffling = {$: 'Shuffling'};
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
+var $author$project$Blackjack2$SuffledDeck = function (a) {
 	return {$: 'SuffledDeck', a: a};
 };
 var $elm$core$Basics$apL = F2(
@@ -2693,9 +2696,6 @@ var $author$project$Blackjack$deck = $elm$core$List$concat(
 				$author$project$Blackjack$allValues);
 		},
 		$author$project$Blackjack$allColours));
-var $elm$core$Basics$identity = function (x) {
-	return x;
-};
 var $elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -3145,6 +3145,8 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
+var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$core$Array$fromListHelp = F3(
 	function (list, nodeList, nodeListSize) {
 		fromListHelp:
@@ -3554,29 +3556,7 @@ var $elm_community$random_extra$Random$List$shuffle = function (list) {
 			length,
 			A2($elm$random$Random$int, 0, length - 1)));
 };
-var $author$project$Blackjack$init = _Utils_Tuple2(
-	$author$project$Blackjack$NotStarted,
-	A2(
-		$elm$random$Random$generate,
-		$author$project$Blackjack$SuffledDeck,
-		$elm_community$random_extra$Random$List$shuffle($author$project$Blackjack$deck)));
-var $elm$core$Platform$Sub$batch = _Platform_batch;
-var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $elm$json$Json$Decode$succeed = _Json_succeed;
-var $author$project$Blackjack$DealerWon = {$: 'DealerWon'};
-var $author$project$Blackjack$DealersTurn = {$: 'DealersTurn'};
-var $author$project$Blackjack$Failure = {$: 'Failure'};
-var $author$project$Blackjack$GameOn = function (a) {
-	return {$: 'GameOn', a: a};
-};
-var $author$project$Blackjack$Push = {$: 'Push'};
-var $author$project$Blackjack$SamWon = {$: 'SamWon'};
-var $author$project$Blackjack$SamsTurn = {$: 'SamsTurn'};
-var $author$project$Blackjack$Start = {$: 'Start'};
-var $author$project$Blackjack$Woops = function (a) {
-	return {$: 'Woops', a: a};
-};
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Blackjack$colourToString = function (colour) {
 	switch (colour.$) {
 		case 'Hearts':
@@ -3627,144 +3607,77 @@ var $author$project$Blackjack$blackjackToString = function (_v0) {
 		' ; ',
 		A2($elm$core$List$map, $author$project$Blackjack$cardToString, stack)) + ('\n\tSam -> [' + ($author$project$Blackjack$handToString(sam) + (']' + ('\n\tDealer -> [' + ($author$project$Blackjack$handToString(dealer) + ']'))))));
 };
-var $author$project$Blackjack$modelToString = function (model) {
-	switch (model.$) {
-		case 'NotStarted':
-			return 'NotStarted';
-		case 'Woops':
-			var str = model.a;
-			return 'Woops huston we got a problem -> ' + str;
+var $author$project$Blackjack2$gameToString = function (game) {
+	switch (game.$) {
+		case 'Shuffling':
+			return 'Shuffling';
+		case 'Start':
+			var bj = game.a;
+			return 'Start \t' + $author$project$Blackjack$blackjackToString(bj);
+		case 'SamsTurn':
+			var bj = game.a;
+			return 'SamsTurn \t' + $author$project$Blackjack$blackjackToString(bj);
+		case 'DealersTurn':
+			var bj = game.a;
+			return 'DealersTurn \t' + $author$project$Blackjack$blackjackToString(bj);
+		case 'SamWon':
+			var bj = game.a;
+			return 'SamWon \t' + $author$project$Blackjack$blackjackToString(bj);
+		case 'DealerWon':
+			var bj = game.a;
+			return 'DealerWon \t' + $author$project$Blackjack$blackjackToString(bj);
+		case 'Push':
+			var bj = game.a;
+			return 'Push \t' + $author$project$Blackjack$blackjackToString(bj);
 		default:
-			var blackjack = model.a;
-			return 'GameOn ' + $author$project$Blackjack$blackjackToString(blackjack);
+			var err = game.a;
+			return 'Err \t' + err;
 	}
 };
-var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$Blackjack$msgToString = function (msg) {
-	if (msg.$ === 'SuffledDeck') {
-		var suffledDeck = msg.a;
-		return 'SuffledDeck [' + (A2(
-			$elm$core$String$join,
-			', ',
-			A2($elm$core$List$map, $author$project$Blackjack$cardToString, suffledDeck)) + ']');
-	} else {
-		return $elm$core$Debug$toString(msg);
-	}
-};
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$Blackjack2$newLine = '\n';
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
-var $elm$core$Tuple$mapSecond = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			x,
-			func(y));
-	});
-var $elm$core$Task$Perform = function (a) {
-	return {$: 'Perform', a: a};
+var $author$project$Blackjack2$Err = function (a) {
+	return {$: 'Err', a: a};
 };
-var $elm$core$Task$init = $elm$core$Task$succeed(_Utils_Tuple0);
-var $elm$core$Task$map = F2(
-	function (func, taskA) {
-		return A2(
-			$elm$core$Task$andThen,
-			function (a) {
-				return $elm$core$Task$succeed(
-					func(a));
-			},
-			taskA);
-	});
-var $elm$core$Task$map2 = F3(
-	function (func, taskA, taskB) {
-		return A2(
-			$elm$core$Task$andThen,
-			function (a) {
-				return A2(
-					$elm$core$Task$andThen,
-					function (b) {
-						return $elm$core$Task$succeed(
-							A2(func, a, b));
-					},
-					taskB);
-			},
-			taskA);
-	});
-var $elm$core$Task$sequence = function (tasks) {
-	return A3(
-		$elm$core$List$foldr,
-		$elm$core$Task$map2($elm$core$List$cons),
-		$elm$core$Task$succeed(_List_Nil),
-		tasks);
+var $author$project$Blackjack2$Start = function (a) {
+	return {$: 'Start', a: a};
 };
-var $elm$core$Task$spawnCmd = F2(
-	function (router, _v0) {
-		var task = _v0.a;
-		return _Scheduler_spawn(
-			A2(
-				$elm$core$Task$andThen,
-				$elm$core$Platform$sendToApp(router),
-				task));
-	});
-var $elm$core$Task$onEffects = F3(
-	function (router, commands, state) {
-		return A2(
-			$elm$core$Task$map,
-			function (_v0) {
-				return _Utils_Tuple0;
-			},
-			$elm$core$Task$sequence(
-				A2(
-					$elm$core$List$map,
-					$elm$core$Task$spawnCmd(router),
-					commands)));
-	});
-var $elm$core$Task$onSelfMsg = F3(
-	function (_v0, _v1, _v2) {
-		return $elm$core$Task$succeed(_Utils_Tuple0);
-	});
-var $elm$core$Task$cmdMap = F2(
-	function (tagger, _v0) {
-		var task = _v0.a;
-		return $elm$core$Task$Perform(
-			A2($elm$core$Task$map, tagger, task));
-	});
-_Platform_effectManagers['Task'] = _Platform_createManager($elm$core$Task$init, $elm$core$Task$onEffects, $elm$core$Task$onSelfMsg, $elm$core$Task$cmdMap);
-var $elm$core$Task$command = _Platform_leaf('Task');
-var $elm$core$Task$perform = F2(
-	function (toMessage, task) {
-		return $elm$core$Task$command(
-			$elm$core$Task$Perform(
-				A2($elm$core$Task$map, toMessage, task)));
-	});
-var $author$project$Blackjack$runMsg = function (msg) {
-	return A2(
-		$elm$core$Task$perform,
-		function (_v0) {
-			return msg;
-		},
-		$elm$core$Task$succeed(_Utils_Tuple0));
+var $author$project$Blackjack2$dealGame = function (suffledDeck) {
+	if (((suffledDeck.b && suffledDeck.b.b) && suffledDeck.b.b.b) && suffledDeck.b.b.b.b) {
+		var card1 = suffledDeck.a;
+		var _v1 = suffledDeck.b;
+		var card2 = _v1.a;
+		var _v2 = _v1.b;
+		var card3 = _v2.a;
+		var _v3 = _v2.b;
+		var card4 = _v3.a;
+		var stack = _v3.b;
+		return $author$project$Blackjack2$Start(
+			{
+				dealer: _List_fromArray(
+					[card2, card4]),
+				sam: _List_fromArray(
+					[card1, card3]),
+				stack: stack
+			});
+	} else {
+		return $author$project$Blackjack2$Err('not enough card to deal the game');
+	}
 };
-var $author$project$Blackjack$play = F3(
-	function (model, errText, fct) {
-		switch (model.$) {
-			case 'NotStarted':
-				return _Utils_Tuple2(
-					$author$project$Blackjack$Woops(errText),
-					$elm$core$Platform$Cmd$none);
-			case 'Woops':
-				var str = model.a;
-				return _Utils_Tuple2(
-					$author$project$Blackjack$Woops(str),
-					$elm$core$Platform$Cmd$none);
-			default:
-				var blackjack = model.a;
-				return A2(
-					$elm$core$Tuple$mapSecond,
-					$author$project$Blackjack$runMsg,
-					fct(blackjack));
-		}
-	});
+var $author$project$Blackjack2$DealerWon = function (a) {
+	return {$: 'DealerWon', a: a};
+};
+var $author$project$Blackjack2$DealersTurn = function (a) {
+	return {$: 'DealersTurn', a: a};
+};
+var $author$project$Blackjack2$Push = function (a) {
+	return {$: 'Push', a: a};
+};
+var $author$project$Blackjack2$SamWon = function (a) {
+	return {$: 'SamWon', a: a};
+};
 var $author$project$Blackjack$valueToPoint = function (value) {
 	switch (value.$) {
 		case 'Ace':
@@ -3801,188 +3714,231 @@ var $elm_community$list_extra$List$Extra$uncons = function (list) {
 			_Utils_Tuple2(first, rest));
 	}
 };
-var $author$project$Blackjack$update = F2(
-	function (msg, model) {
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'msg',
-			$author$project$Blackjack$msgToString(msg));
-		var _v1 = A2(
-			$elm$core$Debug$log,
-			'model',
-			$author$project$Blackjack$modelToString(model));
-		switch (msg.$) {
-			case 'SuffledDeck':
-				var newDeck = msg.a;
-				if (((newDeck.b && newDeck.b.b) && newDeck.b.b.b) && newDeck.b.b.b.b) {
-					var card1 = newDeck.a;
-					var _v4 = newDeck.b;
-					var card2 = _v4.a;
-					var _v5 = _v4.b;
-					var card3 = _v5.a;
-					var _v6 = _v5.b;
-					var card4 = _v6.a;
-					var deck_ = _v6.b;
-					return _Utils_Tuple2(
-						$author$project$Blackjack$GameOn(
-							{
-								dealer: _List_fromArray(
-									[card2, card4]),
-								sam: _List_fromArray(
-									[card1, card3]),
-								stack: deck_
-							}),
-						$author$project$Blackjack$runMsg($author$project$Blackjack$Start));
+var $author$project$Blackjack2$dealerPlay = function (blackjack) {
+	var stack = blackjack.stack;
+	var sam = blackjack.sam;
+	var dealer = blackjack.dealer;
+	var samScore = $author$project$Blackjack$scoreHand(sam);
+	var dealerScore = $author$project$Blackjack$scoreHand(dealer);
+	var _v0 = _Utils_Tuple3(
+		$elm_community$list_extra$List$Extra$uncons(stack),
+		_Utils_cmp(dealerScore, samScore) < 0,
+		dealerScore <= 21);
+	_v0$0:
+	while (true) {
+		_v0$1:
+		while (true) {
+			if (_v0.a.$ === 'Just') {
+				if (!_v0.c) {
+					break _v0$0;
 				} else {
-					return _Utils_Tuple2(
-						$author$project$Blackjack$Woops('shuflled deck wasn\'t quite right ... '),
-						$elm$core$Platform$Cmd$none);
+					if (!_v0.b) {
+						break _v0$1;
+					} else {
+						var _v1 = _v0.a.a;
+						var card = _v1.a;
+						var stack_ = _v1.b;
+						return $author$project$Blackjack2$DealersTurn(
+							_Utils_update(
+								blackjack,
+								{
+									dealer: A2($elm$core$List$cons, card, dealer),
+									stack: stack_
+								}));
+					}
 				}
+			} else {
+				if (!_v0.c) {
+					break _v0$0;
+				} else {
+					if (!_v0.b) {
+						break _v0$1;
+					} else {
+						var _v2 = _v0.a;
+						return $author$project$Blackjack2$Err('no winner yet but no more card');
+					}
+				}
+			}
+		}
+		return _Utils_eq(dealerScore, samScore) ? $author$project$Blackjack2$Push(blackjack) : $author$project$Blackjack2$DealerWon(blackjack);
+	}
+	return $author$project$Blackjack2$SamWon(blackjack);
+};
+var $author$project$Blackjack2$SamsTurn = function (a) {
+	return {$: 'SamsTurn', a: a};
+};
+var $author$project$Blackjack2$initialCheck = function (blackjack) {
+	var sam = blackjack.sam;
+	var dealer = blackjack.dealer;
+	var samScore = $author$project$Blackjack$scoreHand(sam);
+	var dealerScore = $author$project$Blackjack$scoreHand(dealer);
+	var _v0 = _Utils_Tuple2(samScore === 21, dealerScore === 21);
+	if (_v0.a) {
+		if (_v0.b) {
+			return $author$project$Blackjack2$Push(blackjack);
+		} else {
+			return $author$project$Blackjack2$SamWon(blackjack);
+		}
+	} else {
+		if (_v0.b) {
+			return $author$project$Blackjack2$DealerWon(blackjack);
+		} else {
+			return $author$project$Blackjack2$SamsTurn(blackjack);
+		}
+	}
+};
+var $author$project$Blackjack2$samPlay = function (blackjack) {
+	var stack = blackjack.stack;
+	var sam = blackjack.sam;
+	var samScore = $author$project$Blackjack$scoreHand(sam);
+	var _v0 = _Utils_Tuple3(
+		$elm_community$list_extra$List$Extra$uncons(stack),
+		samScore < 17,
+		samScore <= 21);
+	_v0$0:
+	while (true) {
+		_v0$1:
+		while (true) {
+			if (_v0.a.$ === 'Just') {
+				if (!_v0.c) {
+					break _v0$0;
+				} else {
+					if (!_v0.b) {
+						break _v0$1;
+					} else {
+						var _v1 = _v0.a.a;
+						var card = _v1.a;
+						var stack_ = _v1.b;
+						return $author$project$Blackjack2$SamsTurn(
+							_Utils_update(
+								blackjack,
+								{
+									sam: A2($elm$core$List$cons, card, sam),
+									stack: stack_
+								}));
+					}
+				}
+			} else {
+				if (!_v0.c) {
+					break _v0$0;
+				} else {
+					if (!_v0.b) {
+						break _v0$1;
+					} else {
+						var _v2 = _v0.a;
+						return $author$project$Blackjack2$Err('no winner yet but no more card');
+					}
+				}
+			}
+		}
+		return $author$project$Blackjack2$DealersTurn(blackjack);
+	}
+	return $author$project$Blackjack2$DealerWon(blackjack);
+};
+var $author$project$Blackjack2$tick = F2(
+	function (steps, game) {
+		switch (game.$) {
+			case 'Shuffling':
+				return A2($elm$core$List$cons, game, steps);
 			case 'Start':
-				return A3(
-					$author$project$Blackjack$play,
-					model,
-					'cannot start a game without dealing it first',
-					function (blackjack) {
-						var sam = blackjack.sam;
-						var dealer = blackjack.dealer;
-						var samScore = $author$project$Blackjack$scoreHand(sam);
-						var dealerScore = $author$project$Blackjack$scoreHand(dealer);
-						var _v7 = _Utils_Tuple2(samScore === 21, dealerScore === 21);
-						if (_v7.a) {
-							if (_v7.b) {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$Push);
-							} else {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$SamWon);
-							}
-						} else {
-							if (_v7.b) {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$DealerWon);
-							} else {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$SamsTurn);
-							}
-						}
-					});
+				var bj = game.a;
+				return function (game_) {
+					return A2(
+						$author$project$Blackjack2$tick,
+						A2($elm$core$List$cons, game, steps),
+						game_);
+				}(
+					$author$project$Blackjack2$initialCheck(bj));
 			case 'SamsTurn':
-				return A3(
-					$author$project$Blackjack$play,
-					model,
-					'cannot start a game without dealing it first',
-					function (blackjack) {
-						var stack = blackjack.stack;
-						var sam = blackjack.sam;
-						var samScore = $author$project$Blackjack$scoreHand(sam);
-						var _v8 = _Utils_Tuple3(
-							$elm_community$list_extra$List$Extra$uncons(stack),
-							samScore < 17,
-							samScore <= 21);
-						if (!_v8.b) {
-							if (!_v8.c) {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$DealerWon);
-							} else {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$DealersTurn);
-							}
-						} else {
-							if (_v8.a.$ === 'Just') {
-								var _v9 = _v8.a.a;
-								var card = _v9.a;
-								var stack_ = _v9.b;
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(
-										_Utils_update(
-											blackjack,
-											{
-												sam: A2($elm$core$List$cons, card, sam),
-												stack: stack_
-											})),
-									$author$project$Blackjack$SamsTurn);
-							} else {
-								var _v10 = _v8.a;
-								return _Utils_Tuple2(
-									$author$project$Blackjack$Woops('no winner and no cards left, how is that possible? '),
-									$author$project$Blackjack$Failure);
-							}
-						}
-					});
+				var bj = game.a;
+				return function (game_) {
+					return A2(
+						$author$project$Blackjack2$tick,
+						A2($elm$core$List$cons, game, steps),
+						game_);
+				}(
+					$author$project$Blackjack2$samPlay(bj));
 			case 'DealersTurn':
-				return A3(
-					$author$project$Blackjack$play,
-					model,
-					'cannot start a game without dealing it first',
-					function (blackjack) {
-						var stack = blackjack.stack;
-						var sam = blackjack.sam;
-						var dealer = blackjack.dealer;
-						var samScore = $author$project$Blackjack$scoreHand(sam);
-						var dealerScore = $author$project$Blackjack$scoreHand(dealer);
-						var _v11 = _Utils_Tuple3(
-							$elm_community$list_extra$List$Extra$uncons(stack),
-							_Utils_cmp(dealerScore, samScore) < 0,
-							dealerScore <= 21);
-						if (!_v11.b) {
-							if (!_v11.c) {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$SamWon);
-							} else {
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(blackjack),
-									$author$project$Blackjack$DealerWon);
-							}
-						} else {
-							if (_v11.a.$ === 'Just') {
-								var _v12 = _v11.a.a;
-								var card = _v12.a;
-								var stack_ = _v12.b;
-								return _Utils_Tuple2(
-									$author$project$Blackjack$GameOn(
-										_Utils_update(
-											blackjack,
-											{
-												dealer: A2($elm$core$List$cons, card, dealer),
-												stack: stack_
-											})),
-									$author$project$Blackjack$DealersTurn);
-							} else {
-								var _v13 = _v11.a;
-								return _Utils_Tuple2(
-									$author$project$Blackjack$Woops('no winner and no cards left, how is that possible?'),
-									$author$project$Blackjack$Failure);
-							}
-						}
-					});
+				var bj = game.a;
+				return function (game_) {
+					return A2(
+						$author$project$Blackjack2$tick,
+						A2($elm$core$List$cons, game, steps),
+						game_);
+				}(
+					$author$project$Blackjack2$dealerPlay(bj));
 			case 'SamWon':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($elm$core$List$cons, game, steps);
 			case 'DealerWon':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($elm$core$List$cons, game, steps);
 			case 'Push':
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($elm$core$List$cons, game, steps);
 			default:
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				return A2($elm$core$List$cons, game, steps);
 		}
 	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Blackjack2$run = function (suffledDeck) {
+	return A2(
+		$elm$core$Maybe$withDefault,
+		_Utils_Tuple2(
+			$author$project$Blackjack2$Err('woops'),
+			_List_Nil),
+		$elm_community$list_extra$List$Extra$uncons(
+			A2(
+				$author$project$Blackjack2$tick,
+				_List_Nil,
+				$author$project$Blackjack2$dealGame(suffledDeck))));
+};
+var $author$project$Blackjack2$update = F2(
+	function (msg, _v0) {
+		var suffledDeck = msg.a;
+		return _Utils_Tuple2(
+			function (_v2) {
+				var result = _v2.a;
+				var steps = _v2.b;
+				var _v3 = A2(
+					$elm$core$Debug$log,
+					'steps:',
+					A2(
+						$elm$core$String$join,
+						$author$project$Blackjack2$newLine,
+						A2(
+							$elm$core$List$map,
+							$author$project$Blackjack2$gameToString,
+							$elm$core$List$reverse(steps))));
+				var _v4 = A2(
+					$elm$core$Debug$log,
+					'result -> ',
+					$author$project$Blackjack2$gameToString(result));
+				return result;
+			}(
+				$author$project$Blackjack2$run(suffledDeck)),
+			$elm$core$Platform$Cmd$none);
+	});
 var $elm$core$Platform$worker = _Platform_worker;
-var $author$project$Blackjack$main = $elm$core$Platform$worker(
+var $author$project$Blackjack2$main = $elm$core$Platform$worker(
 	{
 		init: function (_v0) {
-			return $author$project$Blackjack$init;
+			return _Utils_Tuple2(
+				$author$project$Blackjack2$Shuffling,
+				A2(
+					$elm$random$Random$generate,
+					$author$project$Blackjack2$SuffledDeck,
+					$elm_community$random_extra$Random$List$shuffle($author$project$Blackjack$deck)));
 		},
 		subscriptions: function (_v1) {
 			return $elm$core$Platform$Sub$none;
 		},
-		update: $author$project$Blackjack$update
+		update: $author$project$Blackjack2$update
 	});
-_Platform_export({'Blackjack':{'init':$author$project$Blackjack$main(
+_Platform_export({'Blackjack2':{'init':$author$project$Blackjack2$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));

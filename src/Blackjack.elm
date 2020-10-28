@@ -1,7 +1,11 @@
 module Blackjack exposing
-    ( cardToString
+    ( Blackjack
+    , Deck
+    , blackjackToString
+    , cardToString
     , deck
     , main
+    , scoreHand
     )
 
 import List.Extra
