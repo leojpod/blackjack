@@ -11,19 +11,44 @@ type CardValue
 
 valueToString : CardValue -> String
 valueToString val =
-    Debug.todo "aaaa"
+    case val of
+        Ace ->
+            "Ace"
+
+        King ->
+            "King"
+
+        Queen ->
+            "Queen"
+
+        Jack ->
+            "Jack"
+
+        Num num ->
+            String.fromInt num
 
 
 type CardColour
     = Hearts
-    | Club
+    | Clubs
     | Diamonds
     | Spades
 
 
 colourToString : CardColour -> String
 colourToString colour =
-    Debug.todo "iiii"
+    case colour of
+        Hearts ->
+            "♥"
+
+        Clubs ->
+            "♣"
+
+        Diamonds ->
+            "♦"
+
+        Spades ->
+            "♠"
 
 
 type alias Card =
@@ -48,6 +73,18 @@ type alias Blackjack =
     }
 
 
+allColours : List CardColour
+allColours =
+    [ Hearts, Clubs, Diamonds, Spades ]
+
+
+allValues : List CardValue
+allValues =
+    [ Ace, King, Queen, Jack ] ++ (List.map Num <| List.range 2 10)
+
+
 deck : List Card
 deck =
-    Debug.todo "woops"
+    allColours
+        |> List.map (\colour -> List.map (Card colour) allValues)
+        |> List.concat
